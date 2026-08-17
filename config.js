@@ -14,7 +14,7 @@ window.EMBER_CONFIG = {
   endpoint: 'https://script.google.com/macros/s/AKfycbwFo7g1CFiYxDbFXKnBgO9-W2IyyOEyqUmVLrIuGt8rgyPb77Z7SC02pzushK7gkytzBg/exec',
 
   // B. OAuth Web application client ID, ends in .apps.googleusercontent.com
-  clientId: 'PASTE_YOUR_CLIENT_ID',
+  clientId: '381788436709-sbmo9jdqvrf315a0g15anudttg5fr370.apps.googleusercontent.com',
 
   // Days in the course
   days: 60,

@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#b4531f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="style.css?v=09641400">
+<link rel="stylesheet" href="style.css?v=09e2f644">
 <title>Ember</title>
 </head>
 <body>
@@ -21,16 +21,42 @@
     <p class="sub" id="sub">—</p>
   </header>
 
-  <!-- ═══════════ TODAY ═══════════ -->
-  <section class="view on" id="v-today">
+  <!-- ═══════════ JOURNEY (lessons + journal + syllabus, one tab) ═══════════ -->
+  <section class="view on" id="v-journey">
 
     <div class="card" id="welcomeBack" hidden>
       <p class="eyebrow">Welcome back</p>
       <div id="welcomeBackText"></div>
     </div>
 
+    <!-- Return counter — pinned at the top, per feedback -->
+    <div class="card returncard">
+      <div class="returns">
+        <b id="daysShown">0</b>
+        <span>days shown up &middot; <span id="returnsCount">0</span> returns</span>
+      </div>
+      <p class="note" style="margin:8px 0 0">
+        This only ever goes up. Missing days is expected; coming back is the part that counts.
+      </p>
+    </div>
+
+    <!-- Weight — its own card, meant to be the first thing you do -->
+    <div class="card">
+      <p class="eyebrow">Weight — best done first thing</p>
+      <div class="weightRow">
+        <input type="number" inputmode="decimal" step="0.1" id="weight" placeholder="—">
+        <button class="ghost" id="btnSaveWeight">Log it</button>
+      </div>
+      <p class="note" style="margin:6px 0 0">Whenever suits you. Skipping is fine too.</p>
+    </div>
+
+    <!-- Next lesson, with progress -->
     <div class="card" id="lessonCard">
-      <p class="eyebrow" id="lessonArc">Today's reading</p>
+      <div class="progressRow">
+        <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+        <span class="progressLabel" id="progressLabel">Day 1 / 60</span>
+      </div>
+      <p class="eyebrow" id="lessonArc">Lessons</p>
       <h2 id="lessonTitle">Loading…</h2>
       <div class="lesson" id="lessonBody"></div>
       <div class="lesson-actions">
@@ -39,14 +65,16 @@
       </div>
     </div>
 
+    <!-- Evening — never "check-in" -->
     <div class="card">
-      <p class="eyebrow">This evening — three watches</p>
+      <p class="eyebrow">Evening</p>
       <div class="watches" id="watches"></div>
 
       <div class="optional">
-        <input type="number" inputmode="decimal" step="0.1" id="weight"
-               placeholder="Weight, if you feel like it">
-        <textarea id="note" placeholder="Anything you want to say about today (optional)"></textarea>
+        <div class="noteRow">
+          <textarea id="note" placeholder="Free write, or use the mic"></textarea>
+          <button class="micBtn" id="btnMic" type="button" title="Voice note" hidden>🎙</button>
+        </div>
         <label class="mini">
           <input type="checkbox" id="noteDeviceOnly">
           Keep this one off my other devices
@@ -61,46 +89,65 @@
       <p class="status" id="saveStatus"></p>
     </div>
 
+    <!-- Day dots — three per day, lit by that evening's watches -->
     <div class="card">
-      <div class="returns">
-        <b id="daysShown">0</b>
-        <span>days shown up &middot; <span id="returnsCount">0</span> returns</span>
-      </div>
-      <p class="note" style="margin:8px 0 0">
-        This only ever goes up. Missing days is expected; coming back is the part that counts.
-      </p>
+      <p class="eyebrow">Recent days</p>
+      <div id="dayDots"></div>
     </div>
-  </section>
 
-  <!-- ═══════════ RESCUE ═══════════ -->
-  <section class="view" id="v-rescue">
-    <div class="card" id="rescuePicker">
-      <p class="eyebrow">Right now</p>
-      <h2>Which one is it?</h2>
-      <p class="note" style="margin:0 0 14px">
-        Pick whichever is closest. Nothing here is recorded.
-      </p>
-      <div class="rescue-list" id="rescueList"></div>
-    </div>
-    <div class="card" id="rescueCard" hidden>
-      <div class="rescue-card" id="rescueBody"></div>
-      <hr class="soft">
-      <button class="ghost" id="btnRescueBack">Back</button>
-    </div>
-  </section>
-
-  <!-- ═══════════ COURSE ═══════════ -->
-  <section class="view" id="v-course">
+    <!-- Syllabus overview -->
     <div class="card">
       <p class="eyebrow">Sixty days</p>
-      <h2>Library</h2>
+      <h2>Overview</h2>
       <p class="note" style="margin:0 0 12px">Anything you have finished stays here to reread.</p>
       <div id="courseList"></div>
     </div>
   </section>
 
-  <!-- ═══════════ YOU ═══════════ -->
-  <section class="view" id="v-you">
+  <!-- ═══════════ RIGHT NOW (panic button) ═══════════ -->
+  <section class="view" id="v-rescue">
+    <div class="card panicWrap" id="panicWrap">
+      <button class="panicBtn" id="panicBtn" aria-label="Right now">
+        <span class="panicRing"><span class="panicGlow"></span>
+          <svg viewBox="0 0 100 100" class="panicFlame" aria-hidden="true">
+            <path d="M50 8 C38 26 30 34 30 50 C30 68 40 82 50 82 C60 82 70 68 70 52
+                     C70 44 66 40 63 46 C61 50 58 50 58 46 C58 34 52 20 50 8 Z"/>
+          </svg>
+        </span>
+      </button>
+      <p class="note" style="text-align:center;margin:10px 0 0">Tap, or just say what's going on below.</p>
+    </div>
+
+    <div class="card" id="askCard">
+      <p class="eyebrow">Tell it what's happening</p>
+      <div class="askRow">
+        <input type="text" id="askInput" placeholder="e.g. I've had a hard day and I want to give up">
+        <button class="primary" id="btnAsk" style="width:auto;padding:14px 18px">Go</button>
+      </div>
+      <div id="askResult" hidden></div>
+    </div>
+
+    <div class="card" id="rescuePicker">
+      <p class="eyebrow">Or pick one</p>
+      <div class="rescue-list" id="rescueList"></div>
+    </div>
+    <div class="card" id="rescueCard" hidden>
+      <div class="rescue-card" id="rescueBody"></div>
+      <div class="landing" id="landing">
+        <p class="dnote" style="margin:0 0 8px">How's that landing?</p>
+        <div class="landingBtns">
+          <button class="opt" data-land="notquite">Not quite…</button>
+          <button class="opt" data-land="try">I'll try</button>
+        </div>
+        <p class="landingReply" id="landingReply" hidden></p>
+      </div>
+      <hr class="soft">
+      <button class="ghost" id="btnRescueBack">Back</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ SETTINGS ═══════════ -->
+  <section class="view" id="v-settings">
     <div class="card">
       <p class="eyebrow">Account</p>
       <h2 id="acctTitle">Not signed in</h2>
@@ -146,10 +193,9 @@
 </div>
 
 <nav>
-  <button data-view="today"  aria-current="page"><span class="ic">◐</span>Today</button>
-  <button data-view="rescue"><span class="ic">✋</span>Right now</button>
-  <button data-view="course"><span class="ic">✦</span>Course</button>
-  <button data-view="you"><span class="ic">☗</span>You</button>
+  <button data-view="journey" aria-current="page"><span class="ic">✦</span>Journey</button>
+  <button data-view="rescue"><span class="ic">🔥</span>Right now</button>
+  <button data-view="settings"><span class="ic">☗</span>Settings</button>
 </nav>
 
 <div id="deckLayer" hidden>
@@ -162,8 +208,8 @@
   <div class="decknav"><button class="primary" id="deckNext">Next</button></div>
 </div>
 
-<script src="config.js?v=09641400"></script>
-<script src="deck.js?v=09641400"></script>
-<script src="app.js?v=09641400"></script>
+<script src="config.js?v=09e2f644"></script>
+<script src="deck.js?v=09e2f644"></script>
+<script src="app.js?v=09e2f644"></script>
 </body>
 </html>

@@ -114,6 +114,8 @@ function recordShowUp(){
 /* ── the check-in ────────────────────────────────────────────────────────── */
 function renderWatches(){
   assertThreeWatches(profile);
+  const w0 = local.get('checkin:'+today(), {}).weight;
+  $('#weight').value = (w0 != null) ? w0 : '';
   const saved = local.get('checkin:'+today(), null);
   $('#watches').innerHTML = profile.watches.map(w => `
     <button class="watch" data-watch="${w.id}" aria-pressed="false">
@@ -132,7 +134,6 @@ function renderWatches(){
     };
   });
   if (saved){
-    $('#weight').value = saved.weight ?? '';
     $('#note').value = saved.note ?? local.get('devicenote:'+today(), '') ?? '';
     $('#noteDeviceOnly').checked = saved.visibility === 'deviceOnly';
     $('#saveStatus').textContent = 'Saved today. Tap again to change anything.';
@@ -143,16 +144,12 @@ async function saveCheckin(){
   const watches = {};
   $$('.watch').forEach(b => { watches[b.dataset.watch] = b.getAttribute('aria-pressed') === 'true'; });
 
-  // Three levels, not two:
-  //   shared      — surfaced on a shared view (only exists once a second person joins)
-  //   private     — DEFAULT. Syncs to your own Drive, readable only by you, and it is
-  //                 what advice is built from. Never shown to anyone else, never quoted back.
-  //   deviceOnly  — opt in. Never leaves this device, so no other device can consult it.
   const deviceOnly = $('#noteDeviceOnly').checked;
   const noteText   = $('#note').value.trim();
+  const prior = local.get('checkin:'+today(), {});
   const entry = {
     watches,
-    weight: $('#weight').value ? Number($('#weight').value) : null,
+    weight: prior.weight ?? null,
     note: deviceOnly ? null : (noteText || null),
     visibility: deviceOnly ? 'deviceOnly' : 'private',
     ts: new Date().toISOString(),
@@ -164,8 +161,36 @@ async function saveCheckin(){
   await save('progress', progress);
 
   $('#saveStatus').textContent = 'Saved. That is the whole thing.';
-  renderProgress();
+  renderProgress(); renderDayDots();
   if (isReturn) showWelcomeBack(gap);
+}
+
+async function saveWeightOnly(){
+  const w = $('#weight').value;
+  const entry = local.get('checkin:'+today(), {watches:{}, note:null});
+  entry.weight = w ? Number(w) : null;
+  entry.ts = new Date().toISOString();
+  await save('checkin:'+today(), entry);
+  $('#btnSaveWeight').textContent = 'Logged';
+  setTimeout(() => { $('#btnSaveWeight').textContent = 'Log it'; }, 1500);
+}
+
+function renderDayDots(){
+  const days = [];
+  for (let i = 13; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const iso = d.toLocaleDateString('en-CA');
+    days.push({iso, entry: local.get('checkin:'+iso, null)});
+  }
+  const any = days.some(d => d.entry);
+  $('#dayDots').innerHTML = any ? days.map(d => {
+    const w = (d.entry && d.entry.watches) || {};
+    const label = new Date(d.iso+'T00:00').toLocaleDateString(undefined,{weekday:'short'});
+    const dots = profile.watches.map(w0 =>
+      `<i class="${w[w0.id] ? 'lit':''}"></i>`).join('');
+    return `<div class="dayRow"><span class="dayLabel">${label}</span>
+      <span class="dayDots3">${dots}</span></div>`;
+  }).join('') : '<p class="dayEmpty">Your first evening will show up here.</p>';
 }
 
 function renderProgress(){
@@ -202,8 +227,9 @@ const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?
 async function renderLesson(){
   const day = currentDay();
   $('#sub').textContent =
-    new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})
-    + ` · day ${day} of ${CFG.days}`;
+    new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  $('#progressLabel').textContent = `Day ${day} / ${CFG.days}`;
+  $('#progressFill').style.width = `${Math.round(day/CFG.days*100)}%`;
 
   const deck = await load('deck:'+String(day).padStart(2,'0'));
   const done = local.get('lessonsDone', []).includes(day);
@@ -262,8 +288,22 @@ function showCard(c){
     <p>${esc(c.body)}</p>
     <div class="move"><b>The move:</b> ${esc(c.move)}</div>
     <div class="line">${esc(c.line)}</div>`;
+  $('#landingReply').hidden = true;
+  $$('#landing .opt').forEach(b => b.classList.remove('picked'));
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+/* Not scored, nothing sent anywhere. Just a soft close on the moment. */
+const LANDING_REPLY = {
+  notquite: "Okay. That one didn't fit — pick another, or just sit with it a minute.",
+  try:      "That's the whole ask. Not a promise, just a try.",
+};
+$$('#landing .opt').forEach(b => b.onclick = () => {
+  $$('#landing .opt').forEach(x => x.classList.remove('picked'));
+  b.classList.add('picked');
+  const r = $('#landingReply');
+  r.hidden = false; r.textContent = LANDING_REPLY[b.dataset.land];
+});
 $('#btnRescueBack').onclick = () => { $('#rescueCard').hidden = true; $('#rescuePicker').hidden = false; };
 
 /* ── library ─────────────────────────────────────────────────────────────── */
@@ -416,6 +456,61 @@ function importAll(file){
   r.readAsText(file);
 }
 
+
+/* ── voice note — real Web Speech API, feature-detected, never faked ────────── */
+function initMic(){
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec){ return; }                       // no silent fake button — just hide it
+  const btn = $('#btnMic'); btn.hidden = false;
+  const rec = new Rec();
+  rec.continuous = true; rec.interimResults = false;
+  rec.lang = (navigator.language || 'en-US');
+  let on = false;
+  rec.onresult = e => {
+    let text = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
+    const t = $('#note');
+    t.value = (t.value ? t.value.trim() + ' ' : '') + text.trim();
+  };
+  rec.onend = () => { if (on){ try { rec.start(); } catch {} } };  // keep listening until toggled off
+  rec.onerror = () => { on = false; btn.classList.remove('recording'); };
+  btn.onclick = () => {
+    on = !on;
+    btn.classList.toggle('recording', on);
+    try { on ? rec.start() : rec.stop(); } catch {}
+  };
+}
+
+/* ── "ask" field on Right Now ─────────────────────────────────────────────────
+   Not a live model call — nothing on the phone can reach one. This searches your
+   own rescue deck by keyword overlap and surfaces the closest card. Honest about
+   what it is: a search, not a conversation. */
+function askRescue(){
+  const q = $('#askInput').value.trim();
+  const box = $('#askResult');
+  if (!q){ box.hidden = true; return; }
+  const words = q.toLowerCase().match(/[a-z']+/g) || [];
+  const stop = new Set(['i','a','the','to','and','of','is','it','my','me','im',"i'm",'am','on','in','at']);
+  const terms = words.filter(w => w.length > 2 && !stop.has(w));
+
+  let best = null, bestScore = 0;
+  deck.forEach(c => {
+    const hay = (c.thought + ' ' + c.body).toLowerCase();
+    const score = terms.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
+    if (score > bestScore){ bestScore = score; best = c; }
+  });
+
+  box.hidden = false;
+  if (best && bestScore > 0){
+    box.innerHTML = `<p style="margin:0 0 6px"><b>${esc(best.thought)}</b></p>
+      <p style="margin:0">${esc(best.move)}</p>
+      <p class="askNote">Closest match from your own cards — not a live answer.</p>`;
+  } else {
+    box.innerHTML = `<p style="margin:0">Nothing matched closely. Try the list below —
+      one of these is probably close enough.</p>`;
+  }
+}
+
 /* ── nav ─────────────────────────────────────────────────────────────────── */
 $$('nav button').forEach(b => b.onclick = () => {
   $$('nav button').forEach(x => x.removeAttribute('aria-current'));
@@ -423,12 +518,16 @@ $$('nav button').forEach(b => b.onclick = () => {
   $$('.view').forEach(v => v.classList.remove('on'));
   $('#v-'+b.dataset.view).classList.add('on');
   window.scrollTo(0,0);
-  if (b.dataset.view === 'course') renderCourse();
 });
 $('#btnSave').onclick = saveCheckin;
+$('#btnSaveWeight').onclick = saveWeightOnly;
 $('#btnExport').onclick = exportAll;
 $('#btnImport').onclick = () => $('#fileImport').click();
 $('#fileImport').onchange = e => { if (e.target.files[0]) importAll(e.target.files[0]); };
+initMic();
+$('#btnAsk').onclick = () => askRescue();
+$('#askInput').onkeydown = e => { if (e.key === 'Enter') askRescue(); };
+$('#panicBtn').onclick = () => $('#askInput').focus();
 $('#btnLater').onclick = () => { $('#lessonCard').style.opacity = .45;
   $('#btnLater').textContent = 'Still here when you want it'; };
 $('#btnStart').onclick  = () => Deck.open(currentDay());
@@ -437,14 +536,14 @@ $('#deckNext').onclick  = () => Deck.next();
 $('#deckBack').onclick  = () => Deck.prev();
 
 /* Called by the deck when a lesson is finished. */
-window.afterLessonDone = () => { renderLesson(); renderCourse(); };
+window.afterLessonDone = () => { renderLesson(); renderCourse(); renderDayDots(); };
 
 /* ── boot ────────────────────────────────────────────────────────────────── */
 (async function boot(){
   setSync(CONFIGURED ? '' : 'local only — not synced');
   profile = assertThreeWatches(await load('profile', profile));
   progress = await load('progress', progress);
-  renderWatches(); renderProgress(); renderProfileBox(); renderAccount(); renderScoff();
+  renderWatches(); renderProgress(); renderDayDots(); renderProfileBox(); renderAccount(); renderScoff();
   initAuth(); await initRescue(); await renderLesson();
 
   // A gap is noticed on open, not only on save, so the welcome lands before the ask.
