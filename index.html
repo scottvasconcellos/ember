@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ember">
+<meta name="theme-color" content="#b4531f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="style.css?v=7a39de1a">
+<title>Ember</title>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 class="brand">Ember</h1>
+    <p class="sub" id="sub">—</p>
+  </header>
+
+  <!-- ═══════════ TODAY ═══════════ -->
+  <section class="view on" id="v-today">
+
+    <div class="card" id="welcomeBack" hidden>
+      <p class="eyebrow">Welcome back</p>
+      <div id="welcomeBackText"></div>
+    </div>
+
+    <div class="card" id="lessonCard">
+      <p class="eyebrow" id="lessonArc">Today's reading</p>
+      <h2 id="lessonTitle">Loading…</h2>
+      <div class="lesson" id="lessonBody"></div>
+      <div class="lesson-actions">
+        <button class="primary" id="btnStart" style="flex:2">Start</button>
+        <button class="ghost" id="btnLater">Read later</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">This evening — three watches</p>
+      <div class="watches" id="watches"></div>
+
+      <div class="optional">
+        <input type="number" inputmode="decimal" step="0.1" id="weight"
+               placeholder="Weight, if you feel like it">
+        <textarea id="note" placeholder="Anything you want to say about today (optional)"></textarea>
+        <label class="mini">
+          <input type="checkbox" id="noteDeviceOnly">
+          Keep this one off my other devices
+        </label>
+        <p class="note" style="margin:-2px 0 0;font-size:12.5px">
+          Notes are private to you either way, and they are what your weekly note is built from.
+        </p>
+      </div>
+
+      <hr class="soft">
+      <button class="primary" id="btnSave">Save and done</button>
+      <p class="status" id="saveStatus"></p>
+    </div>
+
+    <div class="card">
+      <div class="returns">
+        <b id="daysShown">0</b>
+        <span>days shown up &middot; <span id="returnsCount">0</span> returns</span>
+      </div>
+      <p class="note" style="margin:8px 0 0">
+        This only ever goes up. Missing days is expected; coming back is the part that counts.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════ RESCUE ═══════════ -->
+  <section class="view" id="v-rescue">
+    <div class="card" id="rescuePicker">
+      <p class="eyebrow">Right now</p>
+      <h2>Which one is it?</h2>
+      <p class="note" style="margin:0 0 14px">
+        Pick whichever is closest. Nothing here is recorded.
+      </p>
+      <div class="rescue-list" id="rescueList"></div>
+    </div>
+    <div class="card" id="rescueCard" hidden>
+      <div class="rescue-card" id="rescueBody"></div>
+      <hr class="soft">
+      <button class="ghost" id="btnRescueBack">Back</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ COURSE ═══════════ -->
+  <section class="view" id="v-course">
+    <div class="card">
+      <p class="eyebrow">Sixty days</p>
+      <h2>Library</h2>
+      <p class="note" style="margin:0 0 12px">Anything you have finished stays here to reread.</p>
+      <div id="courseList"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ YOU ═══════════ -->
+  <section class="view" id="v-you">
+    <div class="card">
+      <p class="eyebrow">Account</p>
+      <h2 id="acctTitle">Not signed in</h2>
+      <p class="note" id="acctNote"></p>
+      <div id="gsiButton" style="margin-top:12px"></div>
+      <button class="ghost" id="btnSignOut" hidden style="margin-top:12px">Sign out</button>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Your rhythm</p>
+      <div id="profileBox" class="note"></div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Before fasting content unlocks</p>
+      <h2>A short check</h2>
+      <p class="note">Five questions, once every few weeks. It is a screen, not a diagnosis.</p>
+      <div id="scoffBox" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Your data</p>
+      <h2>Nothing is trapped here</h2>
+      <p class="note">Everything you enter can be taken out as a file, and put back on any
+        device. Works whether or not sync is switched on.</p>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="ghost" id="btnExport">Export</button>
+        <button class="ghost" id="btnImport">Import</button>
+        <input type="file" id="fileImport" accept="application/json" hidden>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="note" style="margin:0">
+        Ember carries a daily practice. It is not treatment. If what sits underneath this is
+        heavier than a daily practice can hold, that is worth telling someone who can actually
+        help — a doctor, a counsellor, a priest.
+      </p>
+    </div>
+  </section>
+
+  <p class="status" id="syncStatus"></p>
+</div>
+
+<nav>
+  <button data-view="today"  aria-current="page"><span class="ic">◐</span>Today</button>
+  <button data-view="rescue"><span class="ic">✋</span>Right now</button>
+  <button data-view="course"><span class="ic">✦</span>Course</button>
+  <button data-view="you"><span class="ic">☗</span>You</button>
+</nav>
+
+<div id="deckLayer" hidden>
+  <div class="deckbar">
+    <button class="dghost" id="deckBack">‹</button>
+    <div class="dots" id="deckDots"></div>
+    <button class="dghost" id="deckClose">✕</button>
+  </div>
+  <div class="deckstage" id="deckStage"></div>
+  <div class="decknav"><button class="primary" id="deckNext">Next</button></div>
+</div>
+
+<script src="config.js?v=7a39de1a"></script>
+<script src="deck.js?v=7a39de1a"></script>
+<script src="app.js?v=7a39de1a"></script>
+</body>
+</html>
