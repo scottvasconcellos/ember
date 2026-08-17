@@ -11,7 +11,7 @@ window.EMBER_CONFIG = {
   appId: 'ember',
 
   // A. Apps Script Web App URL, ends in /exec
-  endpoint: 'https://script.google.com/macros/s/AKfycbzW9YKrl4RPw04npNyiXI5HackLG16r3Q2FYLVLbD2x0dZsYsFPv0mlH3ImEIEcOrj4EA/exec',
+  endpoint: 'https://script.google.com/macros/s/AKfycbwFo7g1CFiYxDbFXKnBgO9-W2IyyOEyqUmVLrIuGt8rgyPb77Z7SC02pzushK7gkytzBg/exec',
 
   // B. OAuth Web application client ID, ends in .apps.googleusercontent.com
   clientId: 'PASTE_YOUR_CLIENT_ID',

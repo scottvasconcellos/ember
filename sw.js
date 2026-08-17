@@ -1,5 +1,5 @@
 /* Ember service worker — cache the shell so the check-in and Right now work offline. */
-const V = 'ember-7a39de1a';
+const V = 'ember-8e86e0ee';
 const SHELL = ['./','./index.html','./style.css','./app.js','./config.js',
                './rescue.json','./manifest.webmanifest'];
 
