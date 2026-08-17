@@ -236,14 +236,6 @@ async function renderLesson(){
     return;
   }
 
-  $('#lessonArc').textContent = 'Not loaded';
-    $('#lessonBody').innerHTML = CONFIGURED
-      ? '<p class="note">Signed out, or the course has not been uploaded to your backend yet. The check-in below works either way.</p>'
-      : '<p class="note">The lessons live in your own private backend, not on this public page. Two short setup steps and they appear here.</p><p class="note">The check-in and Right now both work today, offline.</p>';
-    $('#btnStart').hidden = true; $('#btnLater').hidden = true;
-    return;
-  }
-
   $('#lessonArc').textContent   = done ? 'Finished today' : deck.arc;
   $('#lessonTitle').textContent = deck.title;
   $('#lessonBody').innerHTML =
