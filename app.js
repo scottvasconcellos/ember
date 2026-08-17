@@ -209,8 +209,34 @@ async function renderLesson(){
   const done = local.get('lessonsDone', []).includes(day);
 
   if (!deck){
-    $('#lessonTitle').textContent = 'Your course is not here yet';
-    $('#lessonArc').textContent = 'Not loaded';
+    const signedIn = !!account;
+    $('#lessonArc').textContent = 'Almost there';
+    if (!CONFIGURED){
+      $('#lessonTitle').textContent = 'One step left';
+      $('#lessonBody').innerHTML =
+        `<p class="note">Your sixty lessons are already published to your private backend.
+          This page just cannot sign in yet, so it cannot fetch them.</p>
+         <p class="note">Create a Google OAuth <b>Web application</b> client ID and paste it
+          into <code>app/config.js</code>. Authorized origin:
+          <code>https://scottvasconcellos.github.io</code></p>
+         <p class="note">Everything below works right now, offline.</p>`;
+    } else if (!signedIn){
+      $('#lessonTitle').textContent = 'Sign in to load your course';
+      $('#lessonBody').innerHTML =
+        `<p class="note">Your lessons are waiting in your own private backend. Sign in on the
+          <b>You</b> tab and they will appear here.</p>
+         <p class="note">The check-in and Right now work without signing in.</p>`;
+    } else {
+      $('#lessonTitle').textContent = 'Today has no lesson yet';
+      $('#lessonBody').innerHTML =
+        `<p class="note">Signed in as ${esc(account.email)}, but day ${day} has not been
+          written yet. The library shows what is ready.</p>`;
+    }
+    $('#btnStart').hidden = true; $('#btnLater').hidden = true;
+    return;
+  }
+
+  $('#lessonArc').textContent = 'Not loaded';
     $('#lessonBody').innerHTML = CONFIGURED
       ? '<p class="note">Signed out, or the course has not been uploaded to your backend yet. The check-in below works either way.</p>'
       : '<p class="note">The lessons live in your own private backend, not on this public page. Two short setup steps and they appear here.</p><p class="note">The check-in and Right now both work today, offline.</p>';
