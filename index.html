@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0d0e12">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="style.css?v=e05e052c">
+<link rel="stylesheet" href="style.css?v=8b34e87c">
 <title>Ember</title>
 </head>
 <body>
@@ -43,7 +43,7 @@
     <div class="card" id="lessonCard">
       <div class="progressRow">
         <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
-        <span class="progressLabel" id="progressLabel">Day 1 / 60</span>
+        <span class="progressLabel" id="progressLabel">Lesson 1 of 60</span>
       </div>
       <p class="eyebrow" id="lessonArc">Lessons</p>
       <h2 id="lessonTitle">Loading…</h2>
@@ -57,9 +57,17 @@
     <!-- Syllabus overview -->
     <div class="card">
       <p class="eyebrow">Sixty days</p>
-      <h2>Overview</h2>
-      <p class="note" style="margin:0 0 12px">Anything you have finished stays here to reread.</p>
+      <h2>Behind you</h2>
+      <p class="note" style="margin:0 0 12px">Every lesson you have opened stays here to reread.</p>
       <div id="courseList"></div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">The path</p>
+      <h2>Six stretches</h2>
+      <p class="note" style="margin:0 0 14px">Tap one to see what it covers. Nothing ahead is
+        listed by name, on purpose.</p>
+      <div id="arcList"></div>
     </div>
   </section>
 
@@ -279,8 +287,8 @@
   <div class="decknav"><button class="primary" id="deckNext">Next</button></div>
 </div>
 
-<script src="config.js?v=e05e052c"></script>
-<script src="deck.js?v=e05e052c"></script>
-<script src="app.js?v=e05e052c"></script>
+<script src="config.js?v=8b34e87c"></script>
+<script src="deck.js?v=8b34e87c"></script>
+<script src="app.js?v=8b34e87c"></script>
 </body>
 </html>

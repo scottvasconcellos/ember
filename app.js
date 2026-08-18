@@ -228,7 +228,7 @@ async function renderLesson(){
   const day = currentDay();
   $('#sub').textContent =
     new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
-  $('#progressLabel').textContent = `Day ${day} / ${CFG.days}`;
+  $('#progressLabel').textContent = `Lesson ${day} of ${CFG.days}`;
   $('#progressFill').style.width = `${Math.round(day/CFG.days*100)}%`;
 
   const deck = await load('deck:'+String(day).padStart(2,'0'));
@@ -255,7 +255,7 @@ async function renderLesson(){
     } else {
       $('#lessonTitle').textContent = 'Today has no lesson yet';
       $('#lessonBody').innerHTML =
-        `<p class="note">Signed in as ${esc(account.email)}, but day ${day} has not been
+        `<p class="note">Signed in as ${esc(account.email)}, but lesson ${day} has not been
           written yet. The library shows what is ready.</p>`;
     }
     $('#btnStart').hidden = true; $('#btnLater').hidden = true;
@@ -266,7 +266,7 @@ async function renderLesson(){
   $('#lessonTitle').textContent = deck.title;
   $('#lessonBody').innerHTML =
     `<p class="note" style="margin:0 0 4px">${deck.cards.length} short pages · about two minutes</p>
-     <p class="note" style="margin:0">${esc(deck.source||'')}</p>`;
+     ${deck.source ? `<p class="note" style="margin:0">${esc(deck.source)}</p>` : ''}`;
   $('#btnStart').hidden = false; $('#btnLater').hidden = false;
   $('#btnStart').textContent = done ? 'Read again' : 'Start';
 }
@@ -309,38 +309,78 @@ $('#btnRescueBack').onclick = () => { $('#rescueCard').hidden = true; $('#rescue
 
 /* ── library ─────────────────────────────────────────────────────────────── */
 async function renderCourse(){
-  const syl  = await load('syllabus');
-  const done = local.get('lessonsDone', []);
-  const day  = currentDay();
-  if (!syl){
-    // No syllabus yet — list whatever decks this device has actually cached.
-    const cached = Object.keys(localStorage)
-      .filter(k => k.startsWith('ember:deck:'))
-      .map(k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } })
-      .filter(Boolean).sort((a,b) => a.day - b.day);
-    $('#courseList').innerHTML = cached.length
-      ? cached.map(d => `<button class="libitem${d.day===day?' today':''}" data-day="${d.day}">
-           <span class="n">${d.day}</span><span>${esc(d.title)}</span>
-           ${done.includes(d.day)?'<span class="tick">✓</span>':''}</button>`).join('')
-      : '<p class="note">Your lessons appear here once the backend is connected.</p>';
-    $$('#courseList .libitem').forEach(b => b.onclick = () => Deck.open(+b.dataset.day));
-    return;
+  const syl   = await load('syllabus');
+  const done  = local.get('lessonsDone', []);
+  const saved = local.get('savedLessons', []);
+  const day   = currentDay();
+
+  /* ── Behind you: only what has actually been reached. Nothing ahead is listed,
+        not even greyed out, because a wall of sixty future titles is its own
+        kind of pressure. ── */
+  const reached = [];
+  for (let d = 1; d <= day; d++){
+    const deck = local.get('deck:' + String(d).padStart(2,'0'));
+    if (deck) reached.push(deck);
+  }
+  if (!reached.length){
+    $('#courseList').innerHTML = '<p class="note">Your first lesson will appear here once you have opened it.</p>';
+  } else {
+    $('#courseList').innerHTML = reached.reverse().map(d => {
+      const isDone = done.includes(d.day), isSaved = saved.includes(d.day);
+      return `<button class="libitem${d.day===day?' today':''}" data-day="${d.day}">
+        <span class="n">${d.day}</span>
+        <span class="libtitle">${esc(d.title)}</span>
+        ${isSaved ? '<span class="star on" title="Saved">\u2605</span>' : ''}
+        ${isDone ? '<span class="tick">\u2713</span>' : ''}
+      </button>`;
+    }).join('');
+    $$('#courseList .libitem').forEach(b =>
+      b.onclick = () => Deck.open(+b.dataset.day));
   }
 
-  $('#courseList').innerHTML = (syl.arcs||[]).map(a => `
-    <p class="libarc"><span class="pill">${esc(a.title)}</span></p>
-    ${a.days.map(d => {
-      const l   = syl.lessons.find(x => x.day === d) || {};
-      const has = done.includes(d);
-      const open = d <= day;                       // never gate what has been reached
-      return `<button class="libitem${d===day?' today':''}" data-day="${d}" ${open?'':'disabled'}>
-        <span class="n">${d}</span><span>${esc(l.title||'')}</span>
-        ${has?'<span class="tick">✓</span>':''}</button>`;
-    }).join('')}`).join('');
-
-  $$('#courseList .libitem').forEach(b =>
-    b.onclick = () => Deck.open(+b.dataset.day));
+  /* ── The path: six names. Tap for a description. No lesson titles ahead. ── */
+  if (!syl || !syl.arcs){ $('#arcList').innerHTML = ''; return; }
+  $('#arcList').innerHTML = syl.arcs.map((a, i) => {
+    const first = a.days[0], last = a.days[a.days.length - 1];
+    const state = day > last ? 'done' : (day >= first ? 'here' : 'ahead');
+    const label = state === 'done' ? 'behind you' : state === 'here' ? 'you are here' : '';
+    return `<div class="arcrow ${state}">
+      <button class="archead" data-arc="${i}" aria-expanded="false">
+        <span class="arcnum">${i + 1}</span>
+        <span class="arcname">${esc(a.title)}</span>
+        ${label ? `<span class="arcstate">${label}</span>` : ''}
+        <span class="arccaret">\u203a</span>
+      </button>
+      <div class="arcblurb" hidden>${esc(a.blurb || '')}</div>
+    </div>`;
+  }).join('');
+  $$('#arcList .archead').forEach(b => b.onclick = () => {
+    const box = b.nextElementSibling;
+    const open = !box.hidden;
+    $$('#arcList .arcblurb').forEach(x => x.hidden = true);
+    $$('#arcList .archead').forEach(x => x.setAttribute('aria-expanded','false'));
+    box.hidden = open;
+    b.setAttribute('aria-expanded', String(!open));
+  });
 }
+
+/* Saving a lesson is deliberately separate from finishing it. You can keep one you
+   want to come back to without having marked it done, and vice versa. */
+window.toggleSaved = async (dayNum) => {
+  const saved = local.get('savedLessons', []);
+  const i = saved.indexOf(dayNum);
+  if (i === -1) saved.push(dayNum); else saved.splice(i, 1);
+  local.set('savedLessons', saved);
+  await save('savedLessons', saved);
+  renderCourse();
+  // same treatment on first paint
+  $$('.view').forEach(v => {
+    const on = v.classList.contains('on');
+    v.setAttribute('aria-hidden', String(!on));
+    v.inert = !on;
+  });
+  return saved.includes(dayNum);
+};
 
 /* ── SCOFF ───────────────────────────────────────────────────────────────── */
 const SCOFF = [
@@ -524,8 +564,17 @@ $$('nav button[data-view]').forEach(b => b.onclick = () => {
   closeRightNow();
   $$('nav button[data-view]').forEach(x => x.removeAttribute('aria-current'));
   b.setAttribute('aria-current','page');
-  $$('.view').forEach(v => v.classList.remove('on'));
-  $('#v-'+b.dataset.view).classList.add('on');
+  // display:none already hides these visually, but belt-and-braces for assistive
+  // tech: mark them hidden and inert so nothing offscreen is announced.
+  $$('.view').forEach(v => {
+    v.classList.remove('on');
+    v.setAttribute('aria-hidden','true');
+    v.inert = true;
+  });
+  const active = $('#v-'+b.dataset.view);
+  active.classList.add('on');
+  active.removeAttribute('aria-hidden');
+  active.inert = false;
   window.scrollTo(0,0);
 });
 $('#btnRightNow').onclick = () => {
@@ -559,6 +608,7 @@ window.afterLessonDone = () => { renderLesson(); renderCourse(); renderDayDots()
   profile = assertThreeWatches(await load('profile', profile));
   progress = await load('progress', progress);
   renderWatches(); renderProgress(); renderDayDots(); renderProfileBox(); renderAccount(); renderScoff();
+  renderCourse();
   initAuth(); await initRescue(); await renderLesson();
 
   // A gap is noticed on open, not only on save, so the welcome lands before the ask.

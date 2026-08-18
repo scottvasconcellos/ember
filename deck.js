@@ -15,68 +15,104 @@ function seeded(str){
 
 /* Four generators. Which one you get depends on the seed, so each day looks
    different but the same day always looks the same. */
+/* Nine generators on the brand's ember palette. The seed decides which one and every
+   value inside it, so a given day always looks identical and no two adjacent days match.
+   No image files, no network, no API — it cannot fail to load and it costs nothing. */
 function art(seed, h = 150){
   const r = seeded(seed), W = 400, H = h;
-  const pick = Math.floor(r() * 4);
-  const warm = ['var(--accent)', '#e0834a', '#d9a05b', '#c96a2c'];
+  /* Rotate rather than pick at random. Random selection clustered badly — 11 of 59
+     consecutive days shared a style and two generators barely appeared. A day number
+     stepped by a co-prime of 9 visits all nine before repeating and never lands on the
+     same style twice in a row. Falls back to the seed for non-numbered art. */
+  const dayNum = /(\d+)/.exec(String(seed));
+  const pick = dayNum ? (Number(dayNum[1]) * 4) % 9 : Math.floor(r() * 9);
+  const warm = ['#e8520a', '#f5820d', '#f5a623', '#c9541c', '#8aa0b8'];
   const c = () => warm[Math.floor(r() * warm.length)];
+  const n = (v) => v.toFixed(1);
   let s = '';
 
-  if (pick === 0) {                                   // concentric arcs — an ember
+  if (pick === 0) {                                    // 0 · concentric embers
     const cx = W * (.3 + r() * .4), cy = H * (.5 + r() * .3);
     for (let i = 7; i > 0; i--)
-      s += `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(i*13+r()*7).toFixed(0)}"
-             fill="none" stroke="${c()}" stroke-width="${(.6+r()*1.4).toFixed(1)}"
-             opacity="${(.10+i*.045).toFixed(2)}"/>`;
-  } else if (pick === 1) {                            // horizon lines
+      s += `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(i*13+r()*7)}" fill="none"
+             stroke="${c()}" stroke-width="${n(.6+r()*1.4)}" opacity="${n(.10+i*.05)}"/>`;
+
+  } else if (pick === 1) {                             // 1 · horizon bands
     for (let i = 0; i < 16; i++){
       const y = (i/16)*H + r()*5;
-      s += `<path d="M0 ${y.toFixed(0)} Q ${(W*.3).toFixed(0)} ${(y-8-r()*16).toFixed(0)}
-             ${W} ${(y+r()*8).toFixed(0)}" fill="none" stroke="${c()}"
-             stroke-width="${(.5+r()).toFixed(1)}" opacity="${(.07+r()*.22).toFixed(2)}"/>`;
+      s += `<path d="M0 ${n(y)} Q ${n(W*.3)} ${n(y-8-r()*16)} ${W} ${n(y+r()*8)}" fill="none"
+             stroke="${c()}" stroke-width="${n(.5+r())}" opacity="${n(.07+r()*.22)}"/>`;
     }
-  } else if (pick === 2) {                            // scattered embers
+
+  } else if (pick === 2) {                             // 2 · scattered sparks
     for (let i = 0; i < 46; i++)
-      s += `<circle cx="${(r()*W).toFixed(0)}" cy="${(r()*H).toFixed(0)}"
-             r="${(.7+r()*4.5).toFixed(1)}" fill="${c()}" opacity="${(.10+r()*.42).toFixed(2)}"/>`;
-  } else {                                            // vertical reeds
+      s += `<circle cx="${n(r()*W)}" cy="${n(r()*H)}" r="${n(.7+r()*4.5)}"
+             fill="${c()}" opacity="${n(.10+r()*.42)}"/>`;
+
+  } else if (pick === 3) {                             // 3 · reeds
     for (let i = 0; i < 26; i++){
       const x = (i/26)*W + r()*9, hh = H*(.25+r()*.7);
-      s += `<line x1="${x.toFixed(0)}" y1="${H}" x2="${(x+(r()-.5)*18).toFixed(0)}"
-             y2="${(H-hh).toFixed(0)}" stroke="${c()}"
-             stroke-width="${(.6+r()*1.8).toFixed(1)}" opacity="${(.10+r()*.30).toFixed(2)}"
+      s += `<line x1="${n(x)}" y1="${H}" x2="${n(x+(r()-.5)*18)}" y2="${n(H-hh)}"
+             stroke="${c()}" stroke-width="${n(.6+r()*1.8)}" opacity="${n(.10+r()*.30)}"
              stroke-linecap="round"/>`;
     }
+
+  } else if (pick === 4) {                             // 4 · rising smoke
+    for (let i = 0; i < 7; i++){
+      const x = W*(.15+r()*.7);
+      let d = `M${n(x)} ${H}`;
+      for (let y = H; y > 0; y -= H/6) d += ` Q ${n(x+(r()-.5)*60)} ${n(y-H/12)} ${n(x+(r()-.5)*40)} ${n(y-H/6)}`;
+      s += `<path d="${d}" fill="none" stroke="${c()}" stroke-width="${n(.8+r()*1.6)}"
+             opacity="${n(.08+r()*.20)}" stroke-linecap="round"/>`;
+    }
+
+  } else if (pick === 5) {                             // 5 · arch — a doorway
+    const cx = W/2 + (r()-.5)*60;
+    for (let i = 6; i > 0; i--){
+      const rad = i*16 + r()*8;
+      s += `<path d="M${n(cx-rad)} ${H} A ${n(rad)} ${n(rad)} 0 0 1 ${n(cx+rad)} ${H}"
+             fill="none" stroke="${c()}" stroke-width="${n(.6+r()*1.2)}"
+             opacity="${n(.10+i*.045)}"/>`;
+    }
+
+  } else if (pick === 6) {                             // 6 · strata — quiet layers
+    let y = H;
+    while (y > 0){
+      const step = 6 + r()*16;
+      s += `<rect x="0" y="${n(y)}" width="${W}" height="${n(step*.55)}"
+             fill="${c()}" opacity="${n(.10+r()*.26)}"/>`;
+      y -= step;
+    }
+
+  } else if (pick === 7) {                             // 7 · orbit — a path returned to
+    const cx = W*(.35+r()*.3), cy = H*.55;
+    for (let i = 0; i < 5; i++){
+      const rx = 40+i*26+r()*10, ry = (18+i*11+r()*6);
+      s += `<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(rx)}" ry="${n(ry)}"
+             fill="none" stroke="${c()}" stroke-width="${n(.5+r())}"
+             opacity="${n(.10+r()*.22)}" transform="rotate(${n((r()-.5)*40)} ${n(cx)} ${n(cy)})"/>`;
+    }
+    s += `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(3+r()*3)}" fill="${c()}" opacity=".65"/>`;
+
+  } else {                                             // 8 · threshold — a lit gap
+    const gap = W*(.30+r()*.22), lx = (W-gap)/2;
+    for (let i = 0; i < 14; i++){                      // ruled jambs, not solid blocks
+      const y = (i/14)*H + r()*4;
+      s += `<line x1="0" y1="${n(y)}" x2="${n(lx)}" y2="${n(y+(r()-.5)*6)}" stroke="${c()}"
+             stroke-width="${n(.5+r()*1.1)}" opacity="${n(.10+r()*.24)}"/>`;
+      s += `<line x1="${n(lx+gap)}" y1="${n(y)}" x2="${W}" y2="${n(y+(r()-.5)*6)}" stroke="${c()}"
+             stroke-width="${n(.5+r()*1.1)}" opacity="${n(.10+r()*.24)}"/>`;
+    }
+    // The gap stays dark — it is the opening, not a wall. A soft edge on each jamb.
+    s += `<rect x="${n(lx)}" y="0" width="${n(gap)}" height="${H}" fill="#0d0e12" opacity=".55"/>`;
+    s += `<line x1="${n(lx)}" y1="0" x2="${n(lx)}" y2="${H}" stroke="${c()}"
+           stroke-width="1.2" opacity=".38"/>`;
+    s += `<line x1="${n(lx+gap)}" y1="0" x2="${n(lx+gap)}" y2="${H}" stroke="${c()}"
+           stroke-width="1.2" opacity=".38"/>`;
   }
+
   return `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${s}</svg>`;
-}
-
-/* ── how many lessons today ──────────────────────────────────────────────────
- * Up to five lessons a day, offered — never asked for. The count is stored as
- * {date, count} and is read through a date check, so a new day always starts at
- * zero without anything having to run at midnight.
- *
- * This is deliberately NOT surfaced as a counter anywhere: a number that resets
- * is the streak anti-pattern in CONTEXT.md wearing a different hat. It only ever
- * chooses which words the break screen uses.
- */
-const MAX_LESSONS_PER_DAY = 5;
-
-const dayStamp = () => new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD, local
-
-function lessonsToday(){
-  const v = window.emberLocal.get('lessonsToday', null);
-  if (!v || typeof v !== 'object' || v.date !== dayStamp())
-    return { date: dayStamp(), count: 0 };                        // the date reset
-  return { date: v.date, count: Number(v.count) || 0 };
-}
-
-async function bumpLessonsToday(){
-  const next = { date: dayStamp(), count: lessonsToday().count + 1 };
-  window.emberLocal.set('lessonsToday', next);                    // instant, even offline
-  try { await window.emberSave('lessonsToday', next); } catch { /* local copy stands */ }
-  return next;
 }
 
 /* ── player ──────────────────────────────────────────────────────────────── */
@@ -132,7 +168,7 @@ const Deck = {
       <div class="dcard cover">
         <p class="deyebrow">${esc(c.arc)}</p>
         <h1>${esc(c.heading)}</h1>
-        <p class="dnote">Day ${c.day} · about two minutes</p>
+        <p class="dnote">Lesson ${c.day} · about two minutes</p>
       </div>`;
   },
   card_prose(c){
@@ -184,9 +220,10 @@ const Deck = {
     return `${art('z'+c.art, 130)}
       <div class="dcard close">
         ${c.today ? `<div class="today"><b>Today:</b> ${inline(c.today)}</div>` : ''}
-        <blockquote class="closing">${esc(c.line)}</blockquote>
-        <p class="dattrib">${esc(c.cite || '')}</p>
+        ${c.line ? `<blockquote class="closing">${esc(c.line)}</blockquote>` : ''}
+        ${c.cite ? `<p class="dattrib">${esc(c.cite)}</p>` : ''}
         <button class="primary" id="deckDone">Done</button>
+        <button class="brkghost" id="deckSave" style="margin-top:10px">Save this one</button>
         <p class="dnote" style="text-align:center">You can reread this any time in the library.</p>
       </div>`;
   },
@@ -230,6 +267,17 @@ const Deck = {
     }
     if (c.type === 'close'){
       $('#deckDone').onclick = () => this.finish();
+      const sb = $('#deckSave');
+      if (sb){
+        const day = this.data.day;
+        const isSaved = () => (window.emberLocal.get('savedLessons', []) || []).includes(day);
+        const paint = () => {
+          sb.textContent = isSaved() ? 'Saved \u2605' : 'Save this one';
+          sb.classList.toggle('on', isSaved());
+        };
+        paint();
+        sb.onclick = async () => { await window.toggleSaved(day); paint(); };
+      }
     }
   },
 

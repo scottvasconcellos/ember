@@ -378,7 +378,7 @@ nav .tab[aria-current="page"]{color:var(--ember-flame)}
 nav .tab[aria-current="page"] .lbl{color:var(--ember-flame)}
 
 /* centre logo — elevated, blend mode erases the black plate */
-nav .center{flex:0 0 auto;margin-bottom:20px;gap:2px}
+nav .center{flex:0 0 auto;margin-bottom:8px;gap:1px}
 nav .center .lbl{color:rgba(245,130,13,.45)}
 .logoWrap{position:relative;display:block;width:58px;height:58px;border-radius:50%}
 .logoHalo{position:absolute;inset:-4px;border-radius:50%;
@@ -392,7 +392,7 @@ nav .center:active .logoWrap{transform:scale(.96)}
 /* 320px floor — nothing may overflow */
 @media (max-width:359px){
   .logoWrap{width:50px;height:50px}
-  nav .center{margin-bottom:16px}
+  nav .center{margin-bottom:6px}
   nav .tab svg{width:20px;height:20px}
   .wrap{padding:0 12px}
 }
@@ -543,3 +543,32 @@ body.deck-break .deckbar{ border-bottom: 0; }
   .brksparks i{ display:none; }
   .brkmark span{ animation:none; }
 }
+
+/* ═══════════ library + the path ═══════════ */
+.libitem .libtitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.libitem .star{color:var(--ember-amber,#f5a623);font-size:13px;margin-left:6px}
+.libitem .tick{color:var(--ember-flame,#f5820d);margin-left:6px}
+
+.arcrow{border-bottom:1px solid var(--ember-border,rgba(138,160,184,.15))}
+.arcrow:last-child{border-bottom:0}
+.archead{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;
+  border:0;padding:15px 2px;font:inherit;color:inherit;cursor:pointer}
+.arcnum{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  font-size:12px;border:1px solid var(--ember-border,rgba(138,160,184,.15));
+  color:var(--ember-muted,#6b7280)}
+.arcname{flex:1;font-family:var(--font-display,'Fraunces',ui-serif,Georgia,serif);font-size:17px}
+.arcstate{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ember-muted,#6b7280)}
+.arccaret{color:var(--ember-muted,#6b7280);font-size:18px;transition:transform .2s}
+.archead[aria-expanded="true"] .arccaret{transform:rotate(90deg)}
+.arcblurb{padding:0 2px 16px 38px;font-size:15px;line-height:1.6;
+  color:var(--ember-muted,#6b7280)}
+
+/* where you are on the path, without listing anything ahead */
+.arcrow.done .arcnum{border-color:var(--ember-flame,#f5820d);color:var(--ember-flame,#f5820d)}
+.arcrow.here .arcnum{background:var(--ember-flame,#f5820d);border-color:var(--ember-flame,#f5820d);
+  color:#0d0e12;font-weight:600}
+.arcrow.here .arcname{color:var(--ember-text,#d8dce8)}
+.arcrow.ahead .arcname,.arcrow.ahead .arcnum{opacity:.5}
+
+.brkghost.on{border-color:rgba(245,166,35,.5);color:var(--ember-amber,#f5a623)}
