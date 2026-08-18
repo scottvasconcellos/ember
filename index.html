@@ -7,22 +7,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ember">
-<meta name="theme-color" content="#b4531f">
+<meta name="theme-color" content="#0d0e12">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="style.css?v=09e2f644">
+<link rel="stylesheet" href="style.css?v=e05e052c">
 <title>Ember</title>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <h1 class="brand">Ember</h1>
-    <p class="sub" id="sub">—</p>
-  </header>
-
-  <!-- ═══════════ JOURNEY (lessons + journal + syllabus, one tab) ═══════════ -->
+  <!-- ═══════════ JOURNEY — lesson teaser, return counter, syllabus ═══════════ -->
   <section class="view on" id="v-journey">
+    <div class="screenHead">
+      <p class="eyebrow">Journey</p>
+      <p class="screenTitle" id="sub">—</p>
+    </div>
 
     <div class="card" id="welcomeBack" hidden>
       <p class="eyebrow">Welcome back</p>
@@ -40,16 +39,6 @@
       </p>
     </div>
 
-    <!-- Weight — its own card, meant to be the first thing you do -->
-    <div class="card">
-      <p class="eyebrow">Weight — best done first thing</p>
-      <div class="weightRow">
-        <input type="number" inputmode="decimal" step="0.1" id="weight" placeholder="—">
-        <button class="ghost" id="btnSaveWeight">Log it</button>
-      </div>
-      <p class="note" style="margin:6px 0 0">Whenever suits you. Skipping is fine too.</p>
-    </div>
-
     <!-- Next lesson, with progress -->
     <div class="card" id="lessonCard">
       <div class="progressRow">
@@ -65,36 +54,6 @@
       </div>
     </div>
 
-    <!-- Evening — never "check-in" -->
-    <div class="card">
-      <p class="eyebrow">Evening</p>
-      <div class="watches" id="watches"></div>
-
-      <div class="optional">
-        <div class="noteRow">
-          <textarea id="note" placeholder="Free write, or use the mic"></textarea>
-          <button class="micBtn" id="btnMic" type="button" title="Voice note" hidden>🎙</button>
-        </div>
-        <label class="mini">
-          <input type="checkbox" id="noteDeviceOnly">
-          Keep this one off my other devices
-        </label>
-        <p class="note" style="margin:-2px 0 0;font-size:12.5px">
-          Notes are private to you either way, and they are what your weekly note is built from.
-        </p>
-      </div>
-
-      <hr class="soft">
-      <button class="primary" id="btnSave">Save and done</button>
-      <p class="status" id="saveStatus"></p>
-    </div>
-
-    <!-- Day dots — three per day, lit by that evening's watches -->
-    <div class="card">
-      <p class="eyebrow">Recent days</p>
-      <div id="dayDots"></div>
-    </div>
-
     <!-- Syllabus overview -->
     <div class="card">
       <p class="eyebrow">Sixty days</p>
@@ -104,50 +63,79 @@
     </div>
   </section>
 
-  <!-- ═══════════ RIGHT NOW (panic button) ═══════════ -->
-  <section class="view" id="v-rescue">
-    <div class="card panicWrap" id="panicWrap">
-      <button class="panicBtn" id="panicBtn" aria-label="Right now">
-        <span class="panicRing"><span class="panicGlow"></span>
-          <svg viewBox="0 0 100 100" class="panicFlame" aria-hidden="true">
-            <path d="M50 8 C38 26 30 34 30 50 C30 68 40 82 50 82 C60 82 70 68 70 52
-                     C70 44 66 40 63 46 C61 50 58 50 58 46 C58 34 52 20 50 8 Z"/>
-          </svg>
-        </span>
-      </button>
-      <p class="note" style="text-align:center;margin:10px 0 0">Tap, or just say what's going on below.</p>
+  <!-- ═══════════ JOURNAL — weight, the line, day dots ═══════════ -->
+  <section class="view" id="v-journal">
+    <div class="screenHead">
+      <p class="eyebrow">Journal</p>
+      <p class="screenTitle">Today, and the days behind it</p>
     </div>
 
-    <div class="card" id="askCard">
-      <p class="eyebrow">Tell it what's happening</p>
-      <div class="askRow">
-        <input type="text" id="askInput" placeholder="e.g. I've had a hard day and I want to give up">
-        <button class="primary" id="btnAsk" style="width:auto;padding:14px 18px">Go</button>
+    <!-- Weight — meant to be the first thing you do -->
+    <div class="card">
+      <p class="eyebrow">This morning</p>
+      <div class="weightRow">
+        <input type="number" inputmode="decimal" step="0.1" id="weight" placeholder="—">
+        <span class="unit">lbs</span>
+        <button class="ghost" id="btnSaveWeight">Log it</button>
       </div>
-      <div id="askResult" hidden></div>
+      <p class="note" style="margin:8px 0 0">Whenever suits you. Skipping is fine too.</p>
     </div>
 
-    <div class="card" id="rescuePicker">
-      <p class="eyebrow">Or pick one</p>
-      <div class="rescue-list" id="rescueList"></div>
-    </div>
-    <div class="card" id="rescueCard" hidden>
-      <div class="rescue-card" id="rescueBody"></div>
-      <div class="landing" id="landing">
-        <p class="dnote" style="margin:0 0 8px">How's that landing?</p>
-        <div class="landingBtns">
-          <button class="opt" data-land="notquite">Not quite…</button>
-          <button class="opt" data-land="try">I'll try</button>
+    <!-- Free write / voice note -->
+    <div class="card">
+      <p class="eyebrow">A line</p>
+      <div class="optional">
+        <div class="noteRow">
+          <textarea id="note" placeholder="Free write, or use the mic"></textarea>
+          <button class="micBtn" id="btnMic" type="button" title="Voice note" hidden>🎙</button>
         </div>
-        <p class="landingReply" id="landingReply" hidden></p>
+        <label class="mini">
+          <input type="checkbox" id="noteDeviceOnly">
+          Keep this one off my other devices
+        </label>
+        <p class="note" style="margin:-2px 0 0">
+          Notes are private to you either way, and they are what your weekly note is built
+          from. This one is put away when you save your evening.
+        </p>
       </div>
+    </div>
+
+    <!-- Day dots — three per day, lit by that evening's watches -->
+    <div class="card">
+      <p class="eyebrow">Past days</p>
+      <div id="dayDots"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ EVENING — the three watches + save ═══════════ -->
+  <section class="view" id="v-evening">
+    <div class="screenHead">
+      <p class="eyebrow">Evening</p>
+      <p class="screenTitle">Three taps. Saved and done.</p>
+    </div>
+
+    <div class="card">
+      <div class="watches" id="watches"></div>
       <hr class="soft">
-      <button class="ghost" id="btnRescueBack">Back</button>
+      <button class="primary" id="btnSave">Save and done</button>
+      <p class="status" id="saveStatus"></p>
+    </div>
+
+    <div class="card">
+      <p class="note" style="margin:0">
+        Whatever you wrote in the Journal is put away with this. Nothing here is scored, and
+        a night you skip is just a night you skip.
+      </p>
     </div>
   </section>
 
   <!-- ═══════════ SETTINGS ═══════════ -->
   <section class="view" id="v-settings">
+    <div class="screenHead">
+      <p class="eyebrow">Settings</p>
+      <h1 class="brand">Ember</h1>
+    </div>
+
     <div class="card">
       <p class="eyebrow">Account</p>
       <h2 id="acctTitle">Not signed in</h2>
@@ -189,13 +177,96 @@
     </div>
   </section>
 
+  <!-- ═══════════ RIGHT NOW — full-screen overlay, opened by the centre logo ═══════════ -->
+  <section class="view" id="v-rescue">
+    <div class="rnHead">
+      <p class="eyebrow">Right Now</p>
+      <button class="rnClose" id="btnRightNowClose" type="button" aria-label="Close">✕</button>
+    </div>
+
+    <div class="card" id="askCard">
+      <p class="eyebrow">Tell it what's happening</p>
+      <div class="askRow">
+        <input type="text" id="askInput" placeholder="Tell me what's going on…">
+        <button class="sendBtn" id="btnAsk" type="button" aria-label="Go">➤</button>
+      </div>
+      <div id="askResult" hidden></div>
+    </div>
+
+    <div class="panicWrap" id="panicWrap">
+      <button class="panicBtn" id="panicBtn" type="button" aria-label="Right now">
+        <span class="panicRing">
+          <span class="panicGlow"></span>
+          <img class="panicLogo" src="logo-120.png" alt="" aria-hidden="true">
+        </span>
+      </button>
+      <p class="rnPrompt">What are you thinking?</p>
+    </div>
+
+    <div class="card" id="rescuePicker">
+      <p class="eyebrow">Or pick one</p>
+      <div class="rescue-list" id="rescueList"></div>
+    </div>
+
+    <div class="card" id="rescueCard" hidden>
+      <div class="rescue-card" id="rescueBody"></div>
+      <div class="landing" id="landing">
+        <p class="dnote" style="margin:0 0 8px">How's that landing?</p>
+        <div class="landingBtns">
+          <button class="opt" data-land="notquite">Not quite…</button>
+          <button class="opt" data-land="try">I'll try</button>
+        </div>
+        <p class="landingReply" id="landingReply" hidden></p>
+      </div>
+      <hr class="soft">
+      <button class="ghost" id="btnRescueBack">Back</button>
+    </div>
+  </section>
+
   <p class="status" id="syncStatus"></p>
 </div>
 
+<!-- ═══════════ TAB BAR — Journey · Journal · [logo] · Evening · Settings ═══════════ -->
 <nav>
-  <button data-view="journey" aria-current="page"><span class="ic">✦</span>Journey</button>
-  <button data-view="rescue"><span class="ic">🔥</span>Right now</button>
-  <button data-view="settings"><span class="ic">☗</span>Settings</button>
+  <button class="tab" type="button" data-view="journey" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M8 7h8M8 11h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="lbl">Journey</span>
+  </button>
+
+  <button class="tab" type="button" data-view="journal">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M7 8h10M7 12h10M7 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="lbl">Journal</span>
+  </button>
+
+  <button class="center" type="button" id="btnRightNow" aria-label="Right Now">
+    <span class="logoWrap">
+      <span class="logoHalo"></span>
+      <img class="logoImg" src="logo-120.png" alt="" aria-hidden="true">
+    </span>
+    <span class="lbl">Right Now</span>
+  </button>
+
+  <button class="tab" type="button" data-view="evening">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="lbl">Evening</span>
+  </button>
+
+  <button class="tab" type="button" data-view="settings">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="lbl">Settings</span>
+  </button>
 </nav>
 
 <div id="deckLayer" hidden>
@@ -208,8 +279,8 @@
   <div class="decknav"><button class="primary" id="deckNext">Next</button></div>
 </div>
 
-<script src="config.js?v=09e2f644"></script>
-<script src="deck.js?v=09e2f644"></script>
-<script src="app.js?v=09e2f644"></script>
+<script src="config.js?v=e05e052c"></script>
+<script src="deck.js?v=e05e052c"></script>
+<script src="app.js?v=e05e052c"></script>
 </body>
 </html>

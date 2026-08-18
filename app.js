@@ -290,7 +290,8 @@ function showCard(c){
     <div class="line">${esc(c.line)}</div>`;
   $('#landingReply').hidden = true;
   $$('#landing .opt').forEach(b => b.classList.remove('picked'));
-  window.scrollTo({top:0,behavior:'smooth'});
+  const rn = $('#v-rescue');
+  (rn.classList.contains('on') ? rn : window).scrollTo({top:0,behavior:'smooth'});
 }
 
 /* Not scored, nothing sent anywhere. Just a soft close on the moment. */
@@ -512,13 +513,27 @@ function askRescue(){
 }
 
 /* ── nav ─────────────────────────────────────────────────────────────────── */
-$$('nav button').forEach(b => b.onclick = () => {
-  $$('nav button').forEach(x => x.removeAttribute('aria-current'));
+/* Five positions: Journey · Journal · [logo] · Evening · Settings.
+   The four data-view buttons swap the section underneath. The centre logo is not a
+   tab — it lifts Right Now over whatever tab is showing, and the ✕ puts it back. */
+const closeRightNow = () => {
+  $('#v-rescue').classList.remove('on');
+  document.body.classList.remove('rightnow-open');
+};
+$$('nav button[data-view]').forEach(b => b.onclick = () => {
+  closeRightNow();
+  $$('nav button[data-view]').forEach(x => x.removeAttribute('aria-current'));
   b.setAttribute('aria-current','page');
   $$('.view').forEach(v => v.classList.remove('on'));
   $('#v-'+b.dataset.view).classList.add('on');
   window.scrollTo(0,0);
 });
+$('#btnRightNow').onclick = () => {
+  $('#v-rescue').classList.add('on');
+  document.body.classList.add('rightnow-open');
+  $('#v-rescue').scrollTop = 0;
+};
+$('#btnRightNowClose').onclick = closeRightNow;
 $('#btnSave').onclick = saveCheckin;
 $('#btnSaveWeight').onclick = saveWeightOnly;
 $('#btnExport').onclick = exportAll;
